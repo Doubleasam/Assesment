@@ -9,6 +9,8 @@ import {
   RevokedTokens,
   RevokedTokensSchema,
 } from '../../shared/models/revokedTokens.model';
+import { ConfigService } from '@nestjs/config';
+import { TestAuthGuard } from './guards/test-auth.guard';
 
 @Module({
   imports: [
@@ -22,7 +24,13 @@ import {
     AuthService,
     {
       provide: APP_GUARD,
-      useClass: AuthGuard,
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        if (configService.get('NODE_ENV') === 'test') {
+          return TestAuthGuard;
+        }
+        return AuthGuard;
+      },
     },
   ],
 })
